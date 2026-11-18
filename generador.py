@@ -28,64 +28,79 @@ def abir_camino(laberinto):
      laberinto[3][2]=0
      laberinto[3][3]=0
 
+# generador.py
+
+
 def crear_laberinto(filas, columnas):
+    # Inicializar toda la matriz con paredes (1)
+    laberinto = [[1 for _ in range(columnas)] for _ in range(filas)]
     
+    # Empezar el backtracking en (1, 1)
+    pila = [(1, 1)]
+    laberinto[1][1] = 0  # Marcar inicio como pasillo
+    
+    while len(pila) > 0:
+        f_act, c_act = pila[-1]
+        
+        # Buscar vecinos a 2 celdas de distancia que sean paredes
+        vecinos = []
+        movimientos = [(-2, 0), (2, 0), (0, -2), (0, 2)]
+        
+        for df, dc in movimientos:
+            nf, nc = f_act + df, c_act + dc
+            if 0 < nf < filas - 1 and 0 < nc < columnas - 1:
+                if laberinto[nf][nc] == 1:
+                    vecinos.append((nf, nc, df, dc))
+                    
+        if vecinos:
+            # Elegir un vecino aleatorio
+            nf, nc, df, dc = random.choice(vecinos)
+            
+            # Romper la pared intermedia (la que está a la mitad)
+            laberinto[f_act + df // 2][c_act + dc // 2] = 0
+            
+            # Marcar el nuevo vecino como pasillo y meterlo a la pila
+            laberinto[nf][nc] = 0
+            pila.append((nf, nc))
+        else:
+            # Si no hay vecinos libres, retroceder (backtrack)
+            pila.pop()
 
-    laberinto = []
+    # === GARANTIZAR SALIDAS LIBRES PARA INICIO Y FIN ===
+   # === GARANTIZAR CONECTIVIDAD TOTAL ENTRE INICIO Y FIN ===
+   # === GARANTIZAR CONECTIVIDAD ABSOLUTA EN LA META ===
+    from collections import deque
 
-    for i in range(filas):
-         # Creamos la matriz llena de paredes (1)
-         
-         fila = []
+    fin_f, fin_c = filas - 2, columnas - 2
+    laberinto[fin_f][fin_c] = 0        # La E es transitable
+    laberinto[fin_f - 1][fin_c] = 0    # Forzar celda superior abierta
+    laberinto[fin_f][fin_c - 1] = 0    # Forzar celda izquierda abierta
+    
+    # Verificación rápida con BFS para comprobar si hay ruta del (1,1) al (fin_f, fin_c)
+    cola = deque([(1, 1)])
+    visitados = {(1, 1)}
+    encontrado = False
 
-         for j in range(columnas):
-              fila.append(1)
+    while cola:
+        f, c = cola.popleft()
+        if (f, c) == (fin_f, fin_c):
+            encontrado = True
+            break
+        for df, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+            nf, nc = f + df, c + dc
+            if 0 <= nf < filas and 0 <= nc < columnas:
+                if laberinto[nf][nc] == 0 and (nf, nc) not in visitados:
+                    visitados.add((nf, nc))
+                    cola.append((nf, nc))
 
-         laberinto.append(fila)
-         # 2. Verificar que la matriz tenga tamaño antes de modificarla
-    if filas < 3 or columnas < 3:
-        raise ValueError("Las dimensiones deben ser al menos de 3x3")
-
-         # Elegimos un punto de inicio, por ejemplo (1,1). y lo abrimos (0)
-    inicio_fila, inicio_col =1,1
-    laberinto[inicio_fila][inicio_col]=0
-
-         # Inicializamos la pila con la posicion inicial
-
-    pila = [(inicio_fila, inicio_col)]
-
-         # Ciclo Principal del algoritmo de generacion
-
-    while len(pila) > 0: 
-              fila_actual, col_actual = pila[-1]
-
-              #Usamos la funcion para obtener los vecinos a distancia 2
-              vecinos = obtener_vecinos(fila_actual,col_actual,filas,columnas)
-
-              #Filtramos solo los vecinos que sigan siendo paredes (no visitados)
-              vecinos_no_visitados = []
-              for f, c in vecinos: 
-                   if laberinto[f][c]==1:
-                        vecinos_no_visitados.append((f,c))  
-
-              if vecinos_no_visitados:
-              #Elegimos uno al azar de los vecinos
-                sig_fila, sig_col = random.choice(vecinos_no_visitados)
-
-              #Abrimos la pared intermedia entre la actual y la siguiente
-                pared_fila = (fila_actual + sig_fila)//2
-                pared_col= (col_actual + sig_col)//2
-
-                laberinto[pared_fila][pared_col]=0
-                laberinto[sig_fila][sig_col]=0
-
-                #Agregamos la nueva celda a la pila
-                pila.append((sig_fila,sig_col))
-              else:
-              #Si no hay salidas, hacemos backtracking (sacamos a la pila)
-                pila.pop()
-              
-
+    # Si por alguna razón extrema sigue desconectado, carveamos un pasillo seguro en "L"
+    if not encontrado:
+        f, c = fin_f, fin_c
+        while f > 1:
+            laberinto[f][c] = 0
+            f -= 1
+        while c > 1:
+            laberinto[f][c] = 0
+            c -= 1
 
     return laberinto
-

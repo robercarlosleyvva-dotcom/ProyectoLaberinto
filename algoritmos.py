@@ -18,6 +18,7 @@ def dijkstra(laberinto, inicio, fin):
     movimientos = [(-1,0),(1,0),(0,-1),(0,1)]
 
     while pq:
+        
         costo_actual, f_act, c_act = heapq.heappop(pq)
         nodos_explorados +=1
 
