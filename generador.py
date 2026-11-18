@@ -1,44 +1,20 @@
 import random
-
-def obtener_vecinos(fila,columna,filas,columnas):
-     movimientos = [
-          (-2,0), #Arriba
-          (2,0), #Abajo
-          (0,-2), #Izquierda
-          (0,2) #Derecha
-     ]
-     vecinos = []
-
-     for df ,dc in movimientos:
-          nueva_fila = fila + df
-          nueva_columna = columna + dc
-
-          if (0<nueva_fila < filas -1 and 0 < nueva_columna < columnas -1):
-               vecinos.append((nueva_fila, nueva_columna)) 
-               return vecinos
-
-def abir_camino(laberinto):
-     laberinto[1][1]=0
-     laberinto[1][2]=0
-     laberinto[1][3]=0
-
-     laberinto[2][3]=0
-
-     laberinto[3][1]=0
-     laberinto[3][2]=0
-     laberinto[3][3]=0
-
-# generador.py
+#Importa la libreria 'random' que se utiliza en el algoritmo para elegir aleatoriamente los pasillos
 
 
+#Crear_laberinto: Crea la cuadricula completa de tamaño (fila x columnas)
+#Rellenando TODAS las celdas con el numero "1" (Que en consola visualizamos como muros solidos ██ )
 def crear_laberinto(filas, columnas):
     # Inicializar toda la matriz con paredes (1)
     laberinto = [[1 for _ in range(columnas)] for _ in range(filas)]
     
     # Empezar el backtracking en (1, 1)
-    pila = [(1, 1)]
-    laberinto[1][1] = 0  # Marcar inicio como pasillo
-    
+    pila = [(1, 1)] #Crea una lista que actua como memoria de las celdas que vamos visitando
+    laberinto[1][1] = 0  # Marcar inicio como pasillo libre
+
+
+    #El ciclo se mantiene activo mientras haya coordenadas dentro de la pila. 
+    #Toma la celda actual(f_act,c_act) mirando el utlimo elemento agregado (pila[-1]) sin sacarlo todavia.
     while len(pila) > 0:
         f_act, c_act = pila[-1]
         
@@ -47,31 +23,40 @@ def crear_laberinto(filas, columnas):
         movimientos = [(-2, 0), (2, 0), (0, -2), (0, 2)]
         
         for df, dc in movimientos:
-            nf, nc = f_act + df, c_act + dc
+          #Cambia la posicion 
+            nf = f_act + df
+            nc = c_act + dc 
             if 0 < nf < filas - 1 and 0 < nc < columnas - 1:
+               #Verifica que la nueva posicion(nf, nc) este dentro de los limites del laberinto
                 if laberinto[nf][nc] == 1:
                     vecinos.append((nf, nc, df, dc))
                     
         if vecinos:
             # Elegir un vecino aleatorio
-            nf, nc, df, dc = random.choice(vecinos)
+            nf, nc, df, dc = random.choice(vecinos) #  Si encontro un vecino disponible elije uno al azar usando random.choice
             
-            # Romper la pared intermedia (la que está a la mitad)
+            # Romper la pared del medio diviendo el desplazamiento entre 2  y la convierte en 0
             laberinto[f_act + df // 2][c_act + dc // 2] = 0
             
-            # Marcar el nuevo vecino como pasillo y meterlo a la pila
+            # Marcar el nuevo vecino convertido en 0 como pasillo y lo agrega a la pila para avanzar hacia alla 
             laberinto[nf][nc] = 0
             pila.append((nf, nc))
         else:
-            # Si no hay vecinos libres, retroceder (backtrack)
+            # Si la celda actual no tiene vecinos libres a su alrededor(callejon sin salida), ejecuta
+            #pila.pop() para eliminarla de la memoria y retroceder a la celda anterior, buscando nuevas rutas que hayan quedado pendientes
             pila.pop()
 
-    # === GARANTIZAR SALIDAS LIBRES PARA INICIO Y FIN ===
-   # === GARANTIZAR CONECTIVIDAD TOTAL ENTRE INICIO Y FIN ===
-   # === GARANTIZAR CONECTIVIDAD ABSOLUTA EN LA META ===
+   
     from collections import deque
+    #Importa la estructura de datos deque(Cola eficiente)
 
-    fin_f, fin_c = filas - 2, columnas - 2
+     #Ubica las coordenadas de la meta (fin_f, fin_c) en la esquina inferior derecha
+    fin_f = filas - 2,
+    fin_c =columnas - 2
+
+     #Esto fuerza a que la celda de la meta como sus vecinas superior e izquierda se conviertan en pasillos (0)
+     #Asegurando que nunca queden atrapadas por un muro
+     
     laberinto[fin_f][fin_c] = 0        # La E es transitable
     laberinto[fin_f - 1][fin_c] = 0    # Forzar celda superior abierta
     laberinto[fin_f][fin_c - 1] = 0    # Forzar celda izquierda abierta
