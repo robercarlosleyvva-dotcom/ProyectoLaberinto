@@ -48,7 +48,6 @@ def main():
                    linea += "  " # Espacio libre
          print(linea)
 
-
 #Es el estandar en python para indicar que si este archivo se ejecuta directamente desde 
 #La terminal, llame a la funcion main() para arrancar el programa
 if __name__ == "__main__":

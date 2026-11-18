@@ -51,12 +51,12 @@ def crear_laberinto(filas, columnas):
     #Importa la estructura de datos deque(Cola eficiente)
 
      #Ubica las coordenadas de la meta (fin_f, fin_c) en la esquina inferior derecha
-    fin_f = filas - 2,
+    fin_f = filas - 2
     fin_c =columnas - 2
 
      #Esto fuerza a que la celda de la meta como sus vecinas superior e izquierda se conviertan en pasillos (0)
      #Asegurando que nunca queden atrapadas por un muro
-     
+
     laberinto[fin_f][fin_c] = 0        # La E es transitable
     laberinto[fin_f - 1][fin_c] = 0    # Forzar celda superior abierta
     laberinto[fin_f][fin_c - 1] = 0    # Forzar celda izquierda abierta
